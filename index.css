@@ -541,7 +541,7 @@ footer a:hover { text-decoration: none; }
 @media (min-width: 768px) {
   .portfolio-modal .modal-content { padding: 75px 0px; }
 }
-.portfolio-modal .modal-content img { margin-bottom: 30px; }
+.portfolio-modal .modal-content img { margin-bottom: 30px; width: 100%;}
 .portfolio-modal .close-modal { position: absolute; top: 25px; right: 25px; width: 50px; height: 50px; background-color: transparent; cursor: pointer; }
 .portfolio-modal .close-modal:hover { opacity: 0.5; }
 .portfolio-modal .close-modal .lr { z-index: 1051; width: 1px; height: 50px; margin-left: 25px; background-color: rgb(136, 136, 136); transform: rotate(45deg); }
