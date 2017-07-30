@@ -2,7 +2,7 @@
  * Created by yaozhihao on 2017/7/30.
  */
 
-var symbolSize= 20;
+var symbolSize= 10;
 var streams= [];
 
 function setup(){
