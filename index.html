@@ -1,825 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+    <meta charset="UTF-8">
+    <title>Zhihao</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
 
 
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" >
-    <meta name="author" content="Zhihao Yao">
-
-    <title>Zhihao Yao</title>
-
-    <!-- Bootstrap CSS -->
-    
-
-    <!-- Custom CSS -->
-    
-
-    <!-- Plugin CSS -->
-    
-	
-    <!-- Custom Fonts -->
-
-
-    
-
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
-
-    <!-- Google Analytics -->
-
-	<link media="all" href="bootstrap.min.css" type="text/css" rel="stylesheet">
-    <link media="all" href="index.css" type="text/css" rel="stylesheet">
-
-
+    <script src="three.js"></script>
+    <script src="dat.gui.min.js"></script>
+    <script src="stats.min.js"></script>
+    <script src="OrbitControls.js"></script>
+    <script src="GLTFLoader.js"></script>
 </head>
-<body id="page-top" class="index">
-<!-- Navigation -->
-<nav class="navbar navbar-default navbar-fixed-top">
-	<div class="container">
-		<!-- Brand and toggle get grouped for better mobile display -->
-		<div class="navbar-header page-scroll">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
-				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a class="navbar-brand" id="logo" href="#page-top"><img class="logo-light" src="image/logo.png" alt="" /><img class="logo-dark" src="../img/logo-alt.png" alt="" /><span class="sub-title">Design</span></a>
-		</div>
+<body>
 
-		<!-- Collect the nav links, forms, and other content for toggling -->
-		<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-			<ul class="nav navbar-nav navbar-right">
-				<li class="hidden">
-					<a href="#page-top"></a>
-				</li>
-				<li class="page-scroll">
-					<a href="#work">Work</a>
-				</li>
-				<li class="page-scroll">
-					<a href="#about">About</a>
-				</li>
-				<li class="page-scroll">
-					<a href="#contact">Contact</a>
-				</li>
-			</ul>
-		</div>
-		<!-- /.navbar-collapse -->
-	</div>
-	<!-- /.container-fluid -->
-</nav>
+	<div id="container"></div>
+
+<script>
+		var container;
+        var clock = new THREE.Clock();
+        var model,mixer,action;
+        var devicePixelRatio = window.devicePixelRatio;
+
+		container = document.createElement( 'div' );
+		document.body.appendChild( container );
+
+        // 创建场景
+        var scene = new THREE.Scene();
+        // 创建相机--透视相机
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 500);
+        // 创建WebGl渲染器
+        renderer = new THREE.WebGLRenderer( { antialias: true } );
+
+        // 配置渲染器
+        renderer.autoClear = true;// 自动清除
+        renderer.setPixelRatio (devicePixelRatio)
+        renderer.setClearColor( 0x050505 );// 渲染背景色
+        renderer.shadowMap.enabled = true;
+        renderer.setSize( window.innerWidth, window.innerHeight);// 渲染范围
 
 
 
+        // 配置相机
+        camera.position.set(0, 4, 8);// 相机在三维空间的位置
+        camera.lookAt(new THREE.Vector3(0, 0, 0));// 相机看向空间坐标原点
 
-<!-- Header -->
-    <header style="height: 784px;">
-        <div class="container">
-			<div class="intro-text">
-				<span class="name animated fadeInDown">Zhihao Yao</span>
-				<span class="skills animated fadeIn">Student</span>
-			</div>
-        </div>
-    </header>
+        // 创建立方体
+        var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);// 立方体模型
+        var cubeMaterial = new THREE.MeshLambertMaterial({color : Math.random() * 0xffffff});// 立方体材质,颜色为随机色
+        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);// 创建网格实例
+        // 将立方体加入场景
+        //scene.add(cube);
 
+        // 创建光源 ambientLight:环境光、directionalLight:平行光
+        var ambientLight = new THREE.AmbientLight( 0x666666 );
+        ambientLight.castShadow=true;
+        var directionalLight1 = new THREE.DirectionalLight( 0xffffff );
+        var directionalLight2 = new THREE.DirectionalLight( 0xffffff,1 );
+        directionalLight2.castShadow = true;
+        // 设置光源的位置
+        directionalLight1.position.set(-300, -400, 300);
+        directionalLight2.position.set(30, 40, -30);
+        directionalLight2.shadow.radius = 8;
+        directionalLight2.shadow.mapSize.width = 2048;
+        directionalLight2.shadow.mapSize.height = 2048;
+        //directionalLight2.shadow.camera.far =20;
 
-<div class="col-sm-12" style="text-align: center;margin-top: 15px;">
-	<iframe src="https://player.vimeo.com/video/228077621" width="640" height="381" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
-	<p><a href="https://vimeo.com/228077621">Global Earthquake Data &nbsp;Visualization</a> from <a href="https://vimeo.com/user69553101">Zhihao Yao</a> on <a href="https://vimeo.com">Vimeo</a>.</p>
-</div>
+        //ground
 
-	<!-- Portfolio Grid Section -->
-    <!--<div class="col-sm-12" style="text-align: center;margin-top: 15px;">
-<div class="sketchfab-embed-wrapper"><iframe width= 100% height="480" src="https://sketchfab.com/models/737f5621878145538d24faa98f64a625/embed" frameborder="0" allowvr allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true" onmousewheel=""></iframe>
-
-	<p style="font-size: 13px; font-weight: normal; margin: 5px; color: #4A4A4A;">
-		Have Fun ↑</a>
-	</p>
-
-</div>
-</div>!-->
-
-
-
-	<section id="work">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-12">
-					<h2>Work</h2>
-					<ul class="portfolioFilter list-inline">
-						<li><span class="filter-icon"></span><span class="filter-text">Filter: </span>
-						</li>
-						<li><a href="#" data-filter="*" class="current">All</a>
-						</li>
-						<li><a href="#" data-filter=".web">Web／UI</a>
-						</li>
-						<li><a href="#" data-filter=".3d">3D</a>
-						</li>
-						<li><a href="#" data-filter=".graphic">Graphic Design</a>
-						</li>
-						<li><a href="#" data-filter=".painting">Painting</a>
-						</li>
-					</ul>
-				</div>
-			</div>
-			<div class="row portfolio-padding">
-				<div class="portfolioContainer">
-					<div class="col-sm-4 portfolio-item web ">
-						<a href="#carapp" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>Interior Environment Monitoring</h3>
-									<p>APP</p>
-								</div>
-							</div>
-							<img src="image/car/iphone.jpg" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item 3d">
-						<a href="#planet" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>Low Poly Planet </h3>
-									<p>3D by Blender</p>
-								</div>
-							</div>
-							<img src="image/planet.jpg" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item 3d">
-						<a href="#crystal" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>Crystal</h3>
-									<p>3D by Blender</p>
-								</div>
-							</div>
-							<img src="image/crystal/black.jpg" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item painting">
-						<a href="#soulguard" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>Soul Keeper</h3>
-									<p>Painted by Photoshop</p>
-								</div>
-							</div>
-							<img src="image/spirit/1.jpg" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item 3d">
-						<a href="#skytown" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>Town In The Sky</h3>
-									<p>3D by Blender</p>
-								</div>
-							</div>
-							<img src="image/town.jpg" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item 3d">
-						<a href="#smalltrees" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>Small Forest</h3>
-									<p>3D by Blender</p>
-								</div>
-							</div>
-							<img src="image/trees.jpg" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item web">
-						<a href="#mbe1" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>mbe icon</h3>
-									<p>UI Design</p>
-								</div>
-							</div>
-							<img src="image/mbe.jpg" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item graphic">
-						<a href="#haoposter" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>"Hao"-chinese poster</h3>
-									<p>Graphic Design</p>
-								</div>
-							</div>
-							<img src="image/hao.jpg" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item 3d">
-						<a href="#silentforest" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>silent forest</h3>
-									<p>3D by Blender</p>
-								</div>
-							</div>
-							<img src="image/silentforest.jpg" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item graphic">
-						<a href="#amc" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>AMC Relocations</h3>
-									<p>Logo Recreation, Business Card, Postcard</p>
-								</div>
-							</div>
-							<img src="" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item graphic">
-						<a href="#fdhs2004reunion" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>FDHS 2004 Reunion</h3>
-									<p>Web Graphics, Program</p>
-								</div>
-							</div>
-							<img src="" class="img-responsive" alt="" />
-						</a>
-					</div>
-					<div class="col-sm-4 portfolio-item web graphic">
-						<a href="#gala" class="portfolio-link" data-toggle="modal">
-							<div class="caption">
-								<div class="caption-content">
-									<h3>GalaMusic Group</h3>
-									<p>Website, Logo</p>
-								</div>
-							</div>
-							<img src="" class="img-responsive" alt="" />
-						</a>
-					</div>
-
-				</div>
-			</div>
-		</div>
-	</section>
+		var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 1000, 1000 ), new THREE.MeshStandardMaterial( { color: 0x999999, depthWrite: false } ) );
+		mesh.rotation.x = - Math.PI / 2;
+		mesh.receiveShadow = true;
+        scene.add( mesh );
+        
+        // 将光源加入场景
+        scene.background = new THREE.Color( 0xffffff );
+        scene.fog = new THREE.Fog( 0xffffff, 10, 50 );
+        scene.add(ambientLight);
+        //scene.add(directionalLight1);
+        scene.add(directionalLight2);
 
 
-    <!-- About Section -->
-    <section class="success" id="about">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4">
-                    <h2>About</h2>
-                </div>
-                <div class="col-lg-12">
-                    <p>I'm Zhihao Yao, a student studying in EE of Tsinghua University.</p>
-                    <p>I design websites, digital graphics, icons ,3D models using
-						Photoshop and Blender. I'm fluent in HTML and CSS, and continue to learn JavaScript/ jQuery/ webgl.</p>
-					<p>I'm really interested in creating visual works. And I'm trying to achieve visual effects by coding. </p>
-                </div>
-            </div>
-        </div>
-    </section>
+        //model
+        //var roughnessMipmapper = new RoughnessMipmapper( renderer );
 
-    <!-- Contact Section -->
-    <section id="contact">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-4">
-                    <h2>Contact</h2>
-					<ul class="list-inline">
-						<li>
-							<a href="https://www.pinterest.com/yaozhihao5290/" target="_blank" class="btn-social btn-outline"><i class="fa fa-fw fa-pinterest"></i></a>
-						</li>
-						<li>
-							<a href="https://dribbble.com/YAOZHIHAO" target="_blank" class="btn-social btn-outline"><i class="fa fa-fw fa-dribbble"></i></a>
-						</li>
-						<li>
-							<a href="https://www.behance.net/Soomu" target="_blank" class="btn-social btn-outline"><img style="position: relative;top: -5%;" src="image/behance.png" width="23"></img></a>
-						</li>
-					</ul>
-                	<p style="margin: 20px 0 0 2px;"><span style="font-size: 18px">Email:</span> <a style="font-size: 17ps;" href="mailto:hiATashleymumfordDOTcom" onclick="this.href=this.href
-              .replace(/AT/,'@')
-              .replace(/DOT/,'.')">yaozh_h<span class="dummy-email">REMOVE</span>@outlook<span class="dummy-email">REMOVE</span>.com</a> </p>
-                </div>
-            </div>
-        </div>
-    </section>
+        var carMaterial = new THREE.MeshStandardMaterial({color : 0xffb812,roughness:0});
+        var glassMaterial = new THREE.MeshStandardMaterial({color : 0x94b9f6,roughness:0});
 
-    <!-- Footer -->
-    <footer>
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-12">
-					© Zhihao Yao 2017 <a class="footer-home" href=""><i class="fa fa-fw fa-home"></i> Home</a>
-				</div>
-			</div>
-		</div>
-    </footer>
+        var loader = new THREE.GLTFLoader();
+		loader.load( 'fly.gltf', function ( gltf ) {
 
+			gltf.scene.traverse( function ( child ) {
+                child.castShadow=true;
+                //child.receiveShadow=true;
 
-	<!-- Portfolio Modals -->
-	<div class="portfolio-modal modal fade" id="carapp" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-x: hidden;overflow-y: auto;">
-		<div class="close-modal" data-dismiss="modal">
-			<div class="lr">
-				<div class="rl">
-				</div>
-			</div>
-		</div>
-		<div class="modal-header">
-			<div class="container">
-				<div class="row">
-					<div class="col-lg-3">
-						<h2>Interior Environment Monitoring</h2>
-					</div>
-					<div class="col-lg-8 col-lg-offset-1">
-						<h4>Background</h4>
-						<p>This app is aimed to monitor the interior environment of car.</p>
-						<p>There are four interfaces: main, details, settings, about us.</p>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-4 col-lg-offset-4">
-						<h4>Tool</h4>
-						<p class="small">Photoshop/ After Effects</p>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="modal-content">
-			<div class="container">
-				<div class="row">
-					<div class="col-lg-12">
-						<img src="image/car/car1.gif" class="img-responsive img-centered" alt="">
-					</div>
-					<div class="col-lg-12">
-						<img src="image/car/main.png" class="img-responsive img-centered" alt="">
-					</div>
-					<div class="col-lg-12">
-						<img src="image/car/details.png" class="img-responsive img-centered" alt="">
-						<img src="image/car/settings.png" class="img-responsive img-centered" alt="">
-						<img src="image/car/aboutus.png" class="img-responsive img-centered" alt="">
-						<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                if ( child.material && child.material.name === 'car' ) {
 
-	<div class="portfolio-modal modal fade" id="planet" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-x: hidden;overflow-y: auto;">
-		<div class="close-modal" data-dismiss="modal">
-			<div class="lr">
-				<div class="rl">
-				</div>
-			</div>
-		</div>
-		<div class="modal-header">
-			<div class="container">
-				<div class="row">
-					<div class="col-lg-3">
-						<h2>Low Poly Planet</h2>
-					</div>
-					<div class="col-lg-8 col-lg-offset-1">
-						<h4>Background</h4>
-						<p>Inspired by some beautiful planets in Pinterest.</p>
-						<p>Thare many attractions: cockleboat, volcano, bridge, cabin...</p>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-lg-4 col-lg-offset-4">
-						<h4>Tool</h4>
-						<p class="small">Blender/ Photoshop</p>
-					</div>
-					
-				</div>
-			</div>
-		</div>
-		<div class="modal-content">
-			<div class="container">
-				<div class="row">
-					<div class="col-lg-12">
-						<img src="image/planet/1.jpg" class="img-responsive img-centered" alt="">
-					</div>
-					<div class="col-sm-6">
-						<img src="image/planet/2.jpg" class="img-responsive img-centered" alt="">
-					</div>
-					<div class="col-sm-6">
-						<img src="image/planet/3.jpg" class="img-responsive img-centered" alt="">
-					</div>
-					<div class="col-sm-6">
-						<img src="image/planet/4.jpg" class="img-responsive img-centered" alt="">
-					</div>
-					<div class="col-sm-6">
-						<img src="image/planet/5.jpg" class="img-responsive img-centered" alt="">
-						<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                    child.material = carMaterial;
 
-    <div class="portfolio-modal modal fade" id="crystal" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-x: hidden;overflow-y: auto;">
-	<div class="close-modal" data-dismiss="modal">
-		<div class="lr">
-			<div class="rl">
-			</div>
-		</div>
-	</div>
-	<div class="modal-header">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-3">
-					<h2>Crystal</h2>
-				</div>
-				<div class="col-lg-8 col-lg-offset-1">
-					<h4>Background</h4>
-					<p>Inipired by Mohamed Chahin in Behance</p>
-					<p>Different crystals: black, grey, black, purple.</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-4 col-lg-offset-4">
-					<h4>Tool</h4>
-					<p class="small">Blender/ Photoshop</p>
-				</div>
+                    }
 
-			</div>
-		</div>
-	</div>
-	<div class="modal-content">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-6">
-					<img src="image/crystal/1.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/2.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/3.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/4.jpg" class="img-responsive img-centered" alt="">
-					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-				</div>
+                    } );
 
-			</div>
-		</div>
-	</div>
-</div>
+            model = gltf.scene;
+            model.scale.set(0.5,0.5,0.5);
+            scene.add(model);
 
-    <div class="portfolio-modal modal fade" id="soulguard" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-x: hidden;overflow-y: auto;">
-	<div class="close-modal" data-dismiss="modal">
-		<div class="lr">
-			<div class="rl">
-			</div>
-		</div>
-	</div>
-	<div class="modal-header">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-3">
-					<h2>Interior Environment Monitoring</h2>
-				</div>
-				<div class="col-lg-8 col-lg-offset-1">
-					<h4>Background</h4>
-					<p>This app is aimed to monitor the interior environment of car.</p>
-					<p>There are four interfaces: main, details, settings, about us.</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-4 col-lg-offset-4">
-					<h4>Tool</h4>
-					<p class="small">Photoshop/ After Effects</p>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="modal-content">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-12">
-					<img src="image/car/car1.gif" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-lg-12">
-					<img src="image/car/main.png" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-lg-12">
-					<img src="image/car/details.png" class="img-responsive img-centered" alt="">
-					<img src="image/car/settings.png" class="img-responsive img-centered" alt="">
-					<img src="image/car/aboutus.png" class="img-responsive img-centered" alt="">
-					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
+            mixer = new THREE.AnimationMixer(model);
+            action = mixer.clipAction(gltf.animations[0]);
 
-    <div class="portfolio-modal modal fade" id="skytown" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-x: hidden;overflow-y: auto;">
-	<div class="close-modal" data-dismiss="modal">
-		<div class="lr">
-			<div class="rl">
-			</div>
-		</div>
-	</div>
-	<div class="modal-header">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-3">
-					<h2>Crystal</h2>
-				</div>
-				<div class="col-lg-8 col-lg-offset-1">
-					<h4>Background</h4>
-					<p>Inipired by Mohamed Chahin in Behance</p>
-					<p>Different crystals: black, grey, black, purple.</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-4 col-lg-offset-4">
-					<h4>Tool</h4>
-					<p class="small">Blender/ Photoshop</p>
-				</div>
+			
+            //roughnessMipmapper.dispose();
 
-			</div>
-		</div>
-	</div>
-	<div class="modal-content">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-6">
-					<img src="image/crystal/1.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/2.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/3.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/4.jpg" class="img-responsive img-centered" alt="">
-					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-				</div>
+			animate();
 
-			</div>
-		</div>
-	</div>
-</div>
+		} );
 
-    <div class="portfolio-modal modal fade" id="smalltrees" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-x: hidden;overflow-y: auto;">
-	<div class="close-modal" data-dismiss="modal">
-		<div class="lr">
-			<div class="rl">
-			</div>
-		</div>
-	</div>
-	<div class="modal-header">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-3">
-					<h2>Interior Environment Monitoring</h2>
-				</div>
-				<div class="col-lg-8 col-lg-offset-1">
-					<h4>Background</h4>
-					<p>This app is aimed to monitor the interior environment of car.</p>
-					<p>There are four interfaces: main, details, settings, about us.</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-4 col-lg-offset-4">
-					<h4>Tool</h4>
-					<p class="small">Photoshop/ After Effects</p>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="modal-content">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-12">
-					<img src="image/car/car1.gif" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-lg-12">
-					<img src="image/car/main.png" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-lg-12">
-					<img src="image/car/details.png" class="img-responsive img-centered" alt="">
-					<img src="image/car/settings.png" class="img-responsive img-centered" alt="">
-					<img src="image/car/aboutus.png" class="img-responsive img-centered" alt="">
-					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
+        // 创建网格辅助
+        var gridHelper = new THREE.GridHelper(1200, 50, 0xFF4444, 0x404040 );
+        scene.add( gridHelper );
 
-    <div class="portfolio-modal modal fade" id="mbe1" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-x: hidden;overflow-y: auto;">
-	<div class="close-modal" data-dismiss="modal">
-		<div class="lr">
-			<div class="rl">
-			</div>
-		</div>
-	</div>
-	<div class="modal-header">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-3">
-					<h2>Crystal</h2>
-				</div>
-				<div class="col-lg-8 col-lg-offset-1">
-					<h4>Background</h4>
-					<p>Inipired by Mohamed Chahin in Behance</p>
-					<p>Different crystals: black, grey, black, purple.</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-4 col-lg-offset-4">
-					<h4>Tool</h4>
-					<p class="small">Blender/ Photoshop</p>
-				</div>
+        // 创建轨迹球控件
+		var trackballControls = new THREE.OrbitControls(camera, renderer.domElement);
+		trackballControls.enableDamping=true;
 
-			</div>
-		</div>
-	</div>
-	<div class="modal-content">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-6">
-					<img src="image/crystal/1.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/2.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/3.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/4.jpg" class="img-responsive img-centered" alt="">
-					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-				</div>
+        // 加入图形调试控件中的组件 gui
+        var controls = new function () {
+            this.rotationSpeed = 0.02;
+            this.wireframe = carMaterial.wireframe;
+            this.color = carMaterial.color.getStyle();
+            this.gridHelper = false;
+            this.backGround = renderer.getClearColor().getHex();
+        }
+		// 创建图形调试控件
+		
+		stats = new Stats();
+		container.appendChild( stats.dom );
 
-			</div>
-		</div>
-	</div>
-</div>
+        var gui = new dat.GUI();
 
-    <div class="portfolio-modal modal fade" id="haoposter" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-x: hidden;overflow-y: auto;">
-	<div class="close-modal" data-dismiss="modal">
-		<div class="lr">
-			<div class="rl">
-			</div>
-		</div>
-	</div>
-	<div class="modal-header">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-3">
-					<h2>Interior Environment Monitoring</h2>
-				</div>
-				<div class="col-lg-8 col-lg-offset-1">
-					<h4>Background</h4>
-					<p>This app is aimed to monitor the interior environment of car.</p>
-					<p>There are four interfaces: main, details, settings, about us.</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-4 col-lg-offset-4">
-					<h4>Tool</h4>
-					<p class="small">Photoshop/ After Effects</p>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="modal-content">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-12">
-					<img src="image/car/car1.gif" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-lg-12">
-					<img src="image/car/main.png" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-lg-12">
-					<img src="image/car/details.png" class="img-responsive img-centered" alt="">
-					<img src="image/car/settings.png" class="img-responsive img-centered" alt="">
-					<img src="image/car/aboutus.png" class="img-responsive img-centered" alt="">
-					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
+        // 创建 helperGui 目录,下面包含 gridHelper 组件
+        var helperGui = gui.addFolder('Helper');
+        helperGui.add(controls,'gridHelper').onChange(function (e) {
+            console.log(e);
+            if (e){
+                scene.remove(gridHelper);
+            }else{
+                scene.add(gridHelper);
+            }
+        });
 
-    <div class="portfolio-modal modal fade" id="silentforest" tabindex="-1" role="dialog" aria-hidden="true" style="overflow-x: hidden;overflow-y: auto;">
-	<div class="close-modal" data-dismiss="modal">
-		<div class="lr">
-			<div class="rl">
-			</div>
-		</div>
-	</div>
-	<div class="modal-header">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-3">
-					<h2>Crystal</h2>
-				</div>
-				<div class="col-lg-8 col-lg-offset-1">
-					<h4>Background</h4>
-					<p>Inipired by Mohamed Chahin in Behance</p>
-					<p>Different crystals: black, grey, black, purple.</p>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-lg-4 col-lg-offset-4">
-					<h4>Tool</h4>
-					<p class="small">Blender/ Photoshop</p>
-				</div>
+        // control
+        var states=['Static','TakeOff','Shake','Loop'];
+        var api={state:'Static'};
+        var controlFolder = gui.addFolder("Control");
+        var clipCtrl = controlFolder.add(api,'state').options(states);
+        clipCtrl.onChange(function(){
+            if(api.state === 'TakeOff')action.play();
 
-			</div>
-		</div>
-	</div>
-	<div class="modal-content">
-		<div class="container">
-			<div class="row">
-				<div class="col-lg-6">
-					<img src="image/crystal/1.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/2.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/3.jpg" class="img-responsive img-centered" alt="">
-				</div>
-				<div class="col-sm-6">
-					<img src="image/crystal/4.jpg" class="img-responsive img-centered" alt="">
-					<button type="button" class="btn btn-default" data-dismiss="modal"><i class="fa fa-times"></i> Close</button>
-				</div>
+        });
+        controlFolder.open();
 
-			</div>
-		</div>
-	</div>
-</div>
+        // 创建 meshGui 目录, 目录下包含组件 wireframe、color、rotationSpeed
+        var meshGui = gui.addFolder("Mesh");
+        meshGui.add(controls,'wireframe').onChange(function (e) {
+            carMaterial.wireframe = e;
+        });
 
-<!--processing-->
+        meshGui.addColor(controls,'color').onChange(function (e) {
+            carMaterial.color.setStyle(e);
+        })
+        meshGui.add(controls,'rotationSpeed',0, 0.1);
 
-    <script  src="processing.js"></script>
-    <!-- jQuery Version 1.11.0 -->
-    <script src="jquery-1.11.0.js"></script>
+        // 创建 sceneGui 目录, 目录下包含 backGround 组件
+        var sceneGui = gui.addFolder('Scene');
+        sceneGui.addColor(controls,'backGround').onChange(function (e) {
+            renderer.setClearColor(e)
+        })
 
-    <!-- Bootstrap Core JavaScript -->
-    <script src="bootstrap.min.js"></script>
+        // 将渲染器添加到画布
+        container.appendChild( renderer.domElement );
+        // 添加事件监听
+        window.addEventListener('resize',onWindowResize,false);
 
-    <!-- Plugin JavaScript -->
-    <script src="jquery.easing.min.js"></script>
-    <script src="classie.min.js"></script>
-    <script src="cbpanimatedheader.min.js"></script>
-    <script src="isotope.pkgd.min.js"></script>
-
-    <!-- Custom Theme JavaScript -->
-    <script src="custom.js"></script>
-	
-    <!-- Isotope Settings -->
-	<script>
-		$(window).load(function(){
-			var $container = $('.portfolioContainer');
-			$container.isotope({
-				filter: '*',
-				animationOptions: {
-					duration: 750,
-					easing: 'linear',
-					queue: false
-				}
-			});
-		 
-			$('.portfolioFilter a').click(function(){
-				$('.portfolioFilter .current').removeClass('current');
-				$(this).addClass('current');
-		 
-				var selector = $(this).attr('data-filter');
-				$container.isotope({
-					filter: selector,
-					animationOptions: {
-						duration: 750,
-						easing: 'linear',
-						queue: false
-					}
-				 });
-				 return false;
-			}); 
-		});
-	</script>
-	
-    <!-- Contact Form JavaScript -->
-    <script src="jqbootstrapvalidation.min.js"></script>
-    <script src="contact_me.min.js"></script>
-	
+        animate();
 
 
+
+
+
+
+        // 窗口大小改变触发的方法
+        function onWindowResize() {
+            // 改变相机的 aspect 为窗口的宽和长度之比
+            camera.aspect = window.innerWidth / window.innerHeight;
+            // 更新相机的投影矩阵
+            camera.updateProjectionMatrix();
+            // 重新设置渲染器的大小
+            renderer.setSize(window.innerWidth, window.innerHeight);
+		}
+		
+        
+
+
+        // 渲染方法
+        function render() {
+            // 更新性能插件
+            stats.update();
+            // 更新物体位置
+            trackballControls.update();
+            // 开始渲染
+            renderer.render(scene, camera);
+        }
+        // 实现动画效果
+        function animate() {
+            requestAnimationFrame(animate);
+
+            var delta = clock.getDelta();
+			mixer.update( delta );
+
+            render();
+        }
+
+
+
+</script>
 
 </body>
 </html>
