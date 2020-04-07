@@ -25,6 +25,11 @@
         var devicePixelRatio = window.devicePixelRatio;
         var actions, activeAction, previousAction;
         var api = { state: 'fly' };
+        var objects,raycaster,mouse;
+
+        objects=[];
+        raycaster = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
 
 
 		container = document.createElement( 'div' );
@@ -50,16 +55,9 @@
         camera.position.set(0, 6, 20);// 相机在三维空间的位置
         //camera.lookAt(new THREE.Vector3(0, 100, 100));// 相机看向空间坐标原点
 
-        // 创建立方体
-        var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);// 立方体模型
-        var cubeMaterial = new THREE.MeshLambertMaterial({color : Math.random() * 0xffffff});// 立方体材质,颜色为随机色
-        var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);// 创建网格实例
-        // 将立方体加入场景
-        //scene.add(cube);
 
         // 创建光源 ambientLight:环境光、directionalLight:平行光
         var ambientLight = new THREE.AmbientLight( 0x666666 );
-        ambientLight.castShadow=true;
         var directionalLight1 = new THREE.DirectionalLight( 0xffffff );
         var directionalLight2 = new THREE.DirectionalLight( 0xffffff,1 );
         directionalLight2.castShadow = true;
@@ -91,6 +89,10 @@
 
         var loader = new THREE.GLTFLoader();
 		loader.load( 'fly.glb', function ( gltf ) {
+            gltf.scene.traverse( function ( child ) {
+                child.castShadow=true;
+                objects.push(child);
+            });
 
                     model = gltf.scene;
                     model.scale.set(0.5,0.5,0.5);
@@ -102,7 +104,9 @@
 
 					console.error( e );
 
-				} );      
+                } );     
+
+        initThreeClickEvent();
 
         // 创建轨迹球控件
         var trackballControls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -123,6 +127,22 @@
         container.appendChild( renderer.domElement );
         // 添加事件监听
         window.addEventListener('resize',onWindowResize,false);
+                //监听全局点击事件,通过ray检测选中哪一个object
+        window.addEventListener("mousedown", (event) => {
+        　　event.preventDefault();
+        　　this.mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
+        　　this.mouse.y = - (event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
+        
+
+        　　this.raycaster.setFromCamera(this.mouse, this.camera);
+            var intersects = this.raycaster.intersectObjects(this.objects);
+        
+
+        if (intersects.length > 0) {
+        　　console.log(intersects[0].object.name);
+            if(intersects[0].object.name=="Cube_1_0")fadeToAction( 'loop', 0.1);;
+        }
+        }, false);
 
         animate();
 
@@ -153,7 +173,8 @@
 
 				// emotes
 
-				var emoteFolder = gui.addFolder( 'Control' );
+                var emoteFolder = gui.addFolder( 'Control' );
+
 
 				function createEmoteCallback( name ) {
 
@@ -183,7 +204,8 @@
 
 				}
 
-				emoteFolder.open();
+                emoteFolder.open();
+                fadeToAction( 'fly', 0.2 );
 
 
 		}
@@ -222,7 +244,35 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
 		}
 		
-        
+        function initThreeClickEvent() {
+            //点击射线
+            var raycaster = new THREE.Raycaster();
+            var mouse = new THREE.Vector2();
+            document.getElementById("container").addEventListener('mousedown', onDocumentMouseDown, false);
+            function onDocumentMouseDown(event) {
+                event.preventDefault();
+                mouse.x = (event.touches[ 0 ].pageX /  window.innerWidth) * 2 -1;;
+                mouse.y = -(event.touches[ 0 ].pageY / window.innerHeight) *2 +1;
+
+                raycaster.setFromCamera(mouse, camera);
+
+                //总结一下，这里必须装网格，mesh，装入组是没有效果的
+                //所以我们将所有的盒子的网格放入对象就可以了
+                // 需要被监听的对象要存储在clickObjects中。
+                var intersects = raycaster.intersectObjects(clickObjects);
+                console.log("dianji");
+
+                // console.log(intersects)
+                if(intersects.length > 0) {
+                    // 在这里填写点击代码
+                    console.log("dianji");
+                    console.log(intersects[0].object)
+                    showDetailPage(intersects[0].object.name);
+
+                }
+
+            }
+        }
 
 
         // 渲染方法
