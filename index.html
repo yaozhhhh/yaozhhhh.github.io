@@ -19,10 +19,13 @@
 	<div id="container"></div>
 
 <script>
-		var container;
+		var container,stats;
         var clock = new THREE.Clock();
-        var model,mixer,action;
+        var model,mixer;
         var devicePixelRatio = window.devicePixelRatio;
+        var actions, activeAction, previousAction;
+        var api = { state: 'fly' };
+
 
 		container = document.createElement( 'div' );
 		document.body.appendChild( container );
@@ -44,8 +47,8 @@
 
 
         // 配置相机
-        camera.position.set(0, 4, 8);// 相机在三维空间的位置
-        camera.lookAt(new THREE.Vector3(0, 0, 0));// 相机看向空间坐标原点
+        camera.position.set(0, 6, 20);// 相机在三维空间的位置
+        //camera.lookAt(new THREE.Vector3(0, 100, 100));// 相机看向空间坐标原点
 
         // 创建立方体
         var cubeGeometry = new THREE.CubeGeometry(100, 100, 100);// 立方体模型
@@ -86,99 +89,35 @@
         //model
         //var roughnessMipmapper = new RoughnessMipmapper( renderer );
 
-        var carMaterial = new THREE.MeshStandardMaterial({color : 0xffb812,roughness:0});
-        var glassMaterial = new THREE.MeshStandardMaterial({color : 0x94b9f6,roughness:0});
-
         var loader = new THREE.GLTFLoader();
-		loader.load( 'fly.gltf', function ( gltf ) {
+		loader.load( 'fly.glb', function ( gltf ) {
 
-			gltf.scene.traverse( function ( child ) {
-                child.castShadow=true;
-                //child.receiveShadow=true;
+                    model = gltf.scene;
+                    model.scale.set(0.5,0.5,0.5);
+					scene.add( model );
 
-                if ( child.material && child.material.name === 'car' ) {
+					createGUI( model, gltf.animations );
 
-                    child.material = carMaterial;
+				}, undefined, function ( e ) {
 
-                    }
+					console.error( e );
 
-                    } );
-
-            model = gltf.scene;
-            model.scale.set(0.5,0.5,0.5);
-            scene.add(model);
-
-            mixer = new THREE.AnimationMixer(model);
-            action = mixer.clipAction(gltf.animations[0]);
-
-			
-            //roughnessMipmapper.dispose();
-
-			animate();
-
-		} );
-
-        // 创建网格辅助
-        var gridHelper = new THREE.GridHelper(1200, 50, 0xFF4444, 0x404040 );
-        //scene.add( gridHelper );
+				} );      
 
         // 创建轨迹球控件
-		var trackballControls = new THREE.OrbitControls(camera, renderer.domElement);
+        var trackballControls = new THREE.OrbitControls(camera, renderer.domElement);
+        trackballControls.target = new THREE.Vector3(0, 2, 0);
 		trackballControls.enableDamping=true;
 
         // 加入图形调试控件中的组件 gui
         var controls = new function () {
             this.rotationSpeed = 0.02;
-            this.wireframe = carMaterial.wireframe;
-            this.color = carMaterial.color.getStyle();
-            this.gridHelper = false;
             this.backGround = renderer.getClearColor().getHex();
         }
 		// 创建图形调试控件
 		
 		stats = new Stats();
 		container.appendChild( stats.dom );
-
-        var gui = new dat.GUI();
-
-        // 创建 helperGui 目录,下面包含 gridHelper 组件
-        var helperGui = gui.addFolder('Helper');
-        helperGui.add(controls,'gridHelper').onChange(function (e) {
-            console.log(e);
-            if (e){
-                scene.add(gridHelper);
-            }else{
-                scene.remove(gridHelper);
-            }
-        });
-
-        // control
-        var states=['Static','TakeOff','Shake','Loop'];
-        var api={state:'Static'};
-        var controlFolder = gui.addFolder("Control");
-        var clipCtrl = controlFolder.add(api,'state').options(states);
-        clipCtrl.onChange(function(){
-            if(api.state === 'TakeOff')action.play();
-
-        });
-        controlFolder.open();
-
-        // 创建 meshGui 目录, 目录下包含组件 wireframe、color、rotationSpeed
-        var meshGui = gui.addFolder("Mesh");
-        meshGui.add(controls,'wireframe').onChange(function (e) {
-            carMaterial.wireframe = e;
-        });
-
-        meshGui.addColor(controls,'color').onChange(function (e) {
-            carMaterial.color.setStyle(e);
-        })
-        meshGui.add(controls,'rotationSpeed',0, 0.1);
-
-        // 创建 sceneGui 目录, 目录下包含 backGround 组件
-        var sceneGui = gui.addFolder('Scene');
-        sceneGui.addColor(controls,'backGround').onChange(function (e) {
-            renderer.setClearColor(e)
-        })
 
         // 将渲染器添加到画布
         container.appendChild( renderer.domElement );
@@ -187,7 +126,88 @@
 
         animate();
 
+        function createGUI( model, animations ) {
 
+				var emotes = [ 'fly', 'loop', 'shake' ];
+
+				gui = new dat.GUI();
+
+				mixer = new THREE.AnimationMixer( model );
+
+				actions = {};
+
+				for ( var i = 0; i < animations.length; i ++ ) {
+
+					var clip = animations[ i ];
+					var action = mixer.clipAction( clip );
+					actions[ clip.name ] = action;
+
+					if ( emotes.indexOf( clip.name ) >= 0) {
+
+						action.clampWhenFinished = true;
+						action.loop = THREE.LoopOnce;
+
+					}
+
+				}
+
+				// emotes
+
+				var emoteFolder = gui.addFolder( 'Control' );
+
+				function createEmoteCallback( name ) {
+
+					api[ name ] = function () {
+
+						fadeToAction( name, 0.2 );
+
+						mixer.addEventListener( 'finished', restoreState );
+
+					};
+
+					emoteFolder.add( api, name );
+
+				}
+
+				function restoreState() {
+
+					mixer.removeEventListener( 'finished', restoreState );
+
+					fadeToAction( api.state, 0.2 );
+
+				}
+
+				for ( var i = 0; i < emotes.length; i ++ ) {
+
+					createEmoteCallback( emotes[ i ] );
+
+				}
+
+				emoteFolder.open();
+
+
+		}
+
+
+        function fadeToAction( name, duration ) {
+
+                previousAction = activeAction;
+                activeAction = actions[ name ];
+
+                if ( previousAction !== activeAction ) {
+
+                    previousAction.fadeOut( duration );
+
+                }
+
+                activeAction
+                    .reset()
+                    .setEffectiveTimeScale( 1 )
+                    .setEffectiveWeight( 1 )
+                    .fadeIn( duration )
+                    .play();
+
+        }
 
 
 
@@ -206,23 +226,19 @@
 
 
         // 渲染方法
-        function render() {
-            // 更新性能插件
-            stats.update();
-            // 更新物体位置
-            trackballControls.update();
-            // 开始渲染
-            renderer.render(scene, camera);
-        }
-        // 实现动画效果
         function animate() {
-            requestAnimationFrame(animate);
 
-            var delta = clock.getDelta();
-			mixer.update( delta );
+            var dt = clock.getDelta();
 
-            render();
-        }
+            if ( mixer ) mixer.update( dt );
+
+            requestAnimationFrame( animate );
+
+            renderer.render( scene, camera );
+
+            stats.update();
+
+            }
 
 
 
