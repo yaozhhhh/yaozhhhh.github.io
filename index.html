@@ -106,12 +106,10 @@
 
                 } );     
 
-        initThreeClickEvent();
-
         // 创建轨迹球控件
         var trackballControls = new THREE.OrbitControls(camera, renderer.domElement);
         trackballControls.target = new THREE.Vector3(0, 2, 0);
-		trackballControls.enableDamping=true;
+        trackballControls.enableDamping=true;
 
         // 加入图形调试控件中的组件 gui
         var controls = new function () {
@@ -128,10 +126,11 @@
         // 添加事件监听
         window.addEventListener('resize',onWindowResize,false);
                 //监听全局点击事件,通过ray检测选中哪一个object
-        window.addEventListener("mousedown", (event) => {
+        renderer.domElement.addEventListener("touchstart", (event) => {
         　　event.preventDefault();
-        　　this.mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
-        　　this.mouse.y = - (event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
+            var touch = event.touches[0];
+        　　this.mouse.x = (touch.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
+        　　this.mouse.y = - (touch.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
         
 
         　　this.raycaster.setFromCamera(this.mouse, this.camera);
@@ -244,37 +243,6 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
 		}
 		
-        function initThreeClickEvent() {
-            //点击射线
-            var raycaster = new THREE.Raycaster();
-            var mouse = new THREE.Vector2();
-            document.getElementById("container").addEventListener('mousedown', onDocumentMouseDown, false);
-            function onDocumentMouseDown(event) {
-                event.preventDefault();
-                mouse.x = (event.touches[ 0 ].pageX /  window.innerWidth) * 2 -1;;
-                mouse.y = -(event.touches[ 0 ].pageY / window.innerHeight) *2 +1;
-
-                raycaster.setFromCamera(mouse, camera);
-
-                //总结一下，这里必须装网格，mesh，装入组是没有效果的
-                //所以我们将所有的盒子的网格放入对象就可以了
-                // 需要被监听的对象要存储在clickObjects中。
-                var intersects = raycaster.intersectObjects(clickObjects);
-                console.log("dianji");
-
-                // console.log(intersects)
-                if(intersects.length > 0) {
-                    // 在这里填写点击代码
-                    console.log("dianji");
-                    console.log(intersects[0].object)
-                    showDetailPage(intersects[0].object.name);
-
-                }
-
-            }
-        }
-
-
         // 渲染方法
         function animate() {
 
