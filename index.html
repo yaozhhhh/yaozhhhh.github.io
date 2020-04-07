@@ -233,6 +233,7 @@
             if ( mixer ) mixer.update( dt );
 
             requestAnimationFrame( animate );
+            trackballControls.update();
 
             renderer.render( scene, camera );
 
