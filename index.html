@@ -146,9 +146,9 @@
         helperGui.add(controls,'gridHelper').onChange(function (e) {
             console.log(e);
             if (e){
-                scene.remove(gridHelper);
-            }else{
                 scene.add(gridHelper);
+            }else{
+                scene.remove(gridHelper);
             }
         });
 
